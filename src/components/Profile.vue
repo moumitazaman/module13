@@ -3,20 +3,15 @@ import {ref, reactive,computed,watch} from 'vue';
 import { RouterLink } from 'vue-router';
 import authStore from '../stores/authStore';
 const auth = authStore();
+const eligibilityStatus = ref('');
 const profileData = reactive({
     fullName:auth.user.fullName,
     email:auth.user.email,
     phone:auth.user.phone,
     age:auth.user.age,
     image:auth.user.image,
-    birthYear:computed(()=>{
-        var today = new Date();
-        var birthDate = new Date(today.getFullYear() - profileData.age, today.getMonth(), today.getDate());
-       
-        return birthDate.toISOString().slice(0, 4)
     
-}),
-birthLegal:computed(()=>{
+/*birthLegal:computed(()=>{
         const today = new Date();
         const birthDate = new Date(today.getFullYear() - auth.user.age, today.getMonth(), today.getDate());
         let age = today.getFullYear() - birthDate.getFullYear();
@@ -30,10 +25,41 @@ birthLegal:computed(()=>{
         }
         return msg
     
-}),
+}),*/
 
 });
+let birthYear=computed(()=>{
+        var today = new Date();
+        var birthDate = new Date(today.getFullYear() - profileData.age, today.getMonth(), today.getDate());
+       
+        return birthDate.toISOString().slice(0, 4)
+    
+});
 
+let birthLegal=computed(()=>{
+        const today = new Date();
+        const birthDate = new Date(today.getFullYear() - profileData.age, today.getMonth(), today.getDate());
+        let age = today.getFullYear() - birthDate.getFullYear();
+        let msg;
+       
+        if (isNaN(age) || age <18) {
+           age=0;
+        }
+      
+        return age
+    
+})
+
+watch(birthLegal, (newAge, oldAge) => {
+   
+       
+       if (isNaN(newAge) || newAge <18) {
+        eligibilityStatus.value = "Not Eligible for Voting";
+       }
+       else{
+        eligibilityStatus.value="Eligible For Voting";
+       }
+}, {immediate: true});
 
 </script>
 <template>
@@ -47,9 +73,9 @@ birthLegal:computed(()=>{
 
                      
                         <h1 class="text-xl font-bold">{{ profileData.fullName }}</h1>
-                        <p class="text-gray-600">Birth Year:{{ profileData.birthYear }}</p>
+                        <p class="text-gray-600">Birth Year:{{ birthYear }}</p>
                         <div class="mt-6 flex flex-wrap gap-4 justify-center">
-                            <a  href="#" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">{{ profileData.birthLegal}}</a>
+                            <a  href="#" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">{{ eligibilityStatus }}</a>
                         </div>
                     </div>
                   
